@@ -7,6 +7,8 @@ function App() {
   const [newid, setNewid] = useState(0);
   const [newtime, setNewtime] = useState();
 
+  // ********************************************** reusable function for api call ************************************
+
   const apiCall = async (endpoint, method = "GET", body = null) => {
     const baseUrl = import.meta.env.VITE_BASE_URL;
 
@@ -39,6 +41,8 @@ function App() {
     }
   };
 
+  // ********************************************** LIST FUNCTION ******************************************************
+
   async function list() {
     try {
       const result = await apiCall("/listdata", "GET");
@@ -52,6 +56,8 @@ function App() {
     list();
   }, []);
 
+  // ********************************************** ADD FUNCTION ******************************************************
+
   async function add() {
     try {
       await apiCall("/addvideo", "POST", { name: newname, time: newtime });
@@ -63,14 +69,7 @@ function App() {
     }
   }
 
-  async function deleteItem(id) {
-    try {
-      await apiCall("/deletevideo", "DELETE", { id: id });
-      setData((prev) => prev.filter((item) => item.id !== id));
-    } catch {
-      alert("Failed to delete video...");
-    }
-  }
+  // ********************************************** UPDATE FUNCTION ******************************************************
 
   async function update() {
     try {
@@ -86,6 +85,19 @@ function App() {
       alert("Failed to update video...");
     }
   }
+
+  // ********************************************** DELETE FUNCTION ******************************************************
+
+  async function deleteItem(id) {
+    try {
+      await apiCall("/deletevideo", "DELETE", { id: id });
+      setData((prev) => prev.filter((item) => item.id !== id));
+    } catch {
+      alert("Failed to delete video...");
+    }
+  }
+
+  // ********************************************** EDIT & SAVE FUNCTION ******************************************************
 
   const edit = (id) => {
     setidEdit(true);
@@ -104,6 +116,8 @@ function App() {
       add();
     }
   };
+
+  // ********************************************************** UI ****************************************************
 
   return (
     <>
