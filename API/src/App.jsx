@@ -7,15 +7,42 @@ function App() {
   const [newid, setNewid] = useState(0);
   const [newtime, setNewtime] = useState();
 
+  const apiCall = async (endpoint, method = "GET", body = null) => {
+    const baseUrl = import.meta.env.VITE_BASE_URL;
+
+    try {
+      const options = {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`${baseUrl}${endpoint}`, options);
+
+      if (!response.ok) {
+        throw new Error("API call failed");
+      }
+
+      if (response.status !== 204) {
+        return await response.json(); // Return JSON data if any
+      }
+
+      return null; // Handle cases where no response body is expected
+    } catch (error) {
+      console.error("Error in API call:", error);
+      throw error; // Rethrow the error for further handling
+    }
+  };
+
   async function list() {
     try {
-      const res = await fetch("http://127.0.0.1:8000/listdata");
-      if (res.ok) {
-        const d = await res.json();
-        setData(d);
-      } else {
-        alert("error");
-      }
+      const result = await apiCall("/listdata", "GET");
+      setData(result);
     } catch (error) {
       alert("data is not fetching....");
     }
@@ -26,45 +53,38 @@ function App() {
   }, []);
 
   async function add() {
-    await fetch("http://127.0.0.1:8000/addvideo", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: newname, time: newtime }),
-    });
-    list();
-    setNewname("");
-    setNewtime("");
+    try {
+      await apiCall("/addvideo", "POST", { name: newname, time: newtime });
+      list();
+      setNewname("");
+      setNewtime("");
+    } catch {
+      alert("Failed to add video...");
+    }
   }
 
   async function deleteItem(id) {
-    await fetch("http://127.0.0.1:8000/deletevideo", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json", // Add headers if required by your API
-      },
-      body: JSON.stringify({ id: id }),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setData((prev) => prev.filter((item) => item.id !== id));
-        list();
-      });
+    try {
+      await apiCall("/deletevideo", "DELETE", { id: id });
+      setData((prev) => prev.filter((item) => item.id !== id));
+    } catch {
+      alert("Failed to delete video...");
+    }
   }
 
   async function update() {
-    await fetch("http://127.0.0.1:8000/updatevideo", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json", // Add headers if required by your API
-      },
-      body: JSON.stringify({ id: newid, name: newname, time: newtime }),
-    });
-    list();
-    setNewname("");
-    setNewtime("");
-    setidEdit(false);
+    try {
+      await apiCall("/updatevideo", "PUT", {
+        id: newid,
+        name: newname,
+        time: newtime,
+      });
+      list();
+      setNewname("");
+      setNewtime("");
+    } catch {
+      alert("Failed to update video...");
+    }
   }
 
   const edit = (id) => {
